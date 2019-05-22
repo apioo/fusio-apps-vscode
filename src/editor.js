@@ -1,5 +1,6 @@
 import * as monaco from "monaco-editor";
 import * as yaml from "js-yaml";
+import * as $ from 'jquery';
 
 let data;
 
@@ -7,17 +8,30 @@ export function initAutocomplete() {
     data = yaml.safeLoad(getApi());
 
     monaco.languages.registerCompletionItemProvider('php', {
-        provideCompletionItems: function(model, position) {
-            // find out if we are completing a property in the 'dependencies' object.
-            var textUntilPosition = model.getValueInRange({startLineNumber: position.lineNumber, startColumn: 1, endLineNumber: position.lineNumber, endColumn: position.column});
-            var suggestions = [];
+        provideCompletionItems: function (model, position) {
+            let textUntilPosition = model.getValueInRange({
+                startLineNumber: position.lineNumber,
+                startColumn: 1,
+                endLineNumber: position.lineNumber,
+                endColumn: position.column
+            });
+            let suggestions = [];
 
-            for (let key in data.api) {
-                if (textUntilPosition.endsWith(key + "->")) {
-                    suggestions = createMethodsProposals(key);
+            // specific connector suggestions
+            if (textUntilPosition.endsWith("$connector->getConnection('") || textUntilPosition.endsWith("$connector->getConnection(\"")) {
+                suggestions = createConnectionsProposals();
+            }
+
+            // specific method suggestions
+            if (suggestions.length === 0) {
+                for (let key in data.api) {
+                    if (textUntilPosition.endsWith(key + "->")) {
+                        suggestions = createMethodsProposals(key);
+                    }
                 }
             }
 
+            // global suggestions
             if (suggestions.length === 0) {
                 suggestions = createGlobalProposals();
             }
@@ -29,12 +43,25 @@ export function initAutocomplete() {
     });
 }
 
+function createConnectionsProposals() {
+    let result = [];
+    $(".fusio-load-connection").each(function () {
+        result.push({
+            label: $(this).text(),
+            kind: monaco.languages.CompletionItemKind.Text,
+            insertText: $(this).text()
+        });
+    });
+
+    return result;
+}
+
 function createMethodsProposals(key) {
     let result = [];
     for (let methodName in data.api[key].methods) {
         let method = data.api[key].methods[methodName];
         let label = methodName;
-        
+
         let detail = null;
         if (method.return && method.return.type) {
             detail = method.return.type;
@@ -42,7 +69,7 @@ function createMethodsProposals(key) {
 
         let documentation = null;
         if (method.description) {
-            documentation = method.description; 
+            documentation = method.description;
         }
 
         if (method.arguments) {
@@ -51,7 +78,7 @@ function createMethodsProposals(key) {
                 parts.push(arg.type + " " + arg.name)
             });
 
-            label+= "(" + parts.join(", ") + ")";
+            label += "(" + parts.join(", ") + ")";
         }
 
         result.push({
@@ -62,7 +89,7 @@ function createMethodsProposals(key) {
             insertText: methodName
         });
     }
-    
+
     return result;
 }
 
