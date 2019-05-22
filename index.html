@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+  <link rel="stylesheet" href="css/bootstrap.min.css">
+  <link rel="stylesheet" href="css/app.css">
+  <title>Fusio-Editor</title>
+</head>
+<body data-fusio-url="http://127.0.0.1/projects/fusio/public/index.php/">
+
+<div class="container fusio-login" style="display:none;">
+  <div class="row">
+    <div class="col-md-12">
+      <h5>Login</h5>
+      <form id="login">
+        <div class="form-group">
+          <label for="username">Username:</label>
+          <input type="text" class="form-control" id="username">
+        </div>
+        <div class="form-group">
+          <label for="password">Password:</label>
+          <input type="password" class="form-control" id="password">
+        </div>
+        <input type="submit" value="Login" class="btn btn-primary">
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="container-fluid fusio-app" style="display:none;">
+  <div class="row">
+    <div class="col-md-2">
+      <h5>Navigation</h5>
+      <div class="fusio-sidebar">
+        <h6>Actions</h6>
+        <ul class="nav flex-column" id="fusioActions">
+        </ul>
+        <h6>Connections</h6>
+        <ul class="nav flex-column" id="fusioConnections">
+        </ul>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <h5 id="editorTitle">-</h5>
+      <div id="container" class="fusio-editor"></div>
+    </div>
+    <div class="col-md-4">
+      <h5>Execute</h5>
+      <div class="fusio-execute">
+        <form id="execute">
+          <input type="hidden" id="actionId" value="">
+          <div class="form-group">
+            <label for="method">Method:</label>
+            <select id="method" class="form-control">
+              <option value="GET">GET</option>
+              <option value="POST">POST</option>
+              <option value="PUT">PUT</option>
+              <option value="PATCH">PATCH</option>
+              <option value="DELETE">DELETE</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="uriFragments">URI Fragments:</label>
+            <input type="text" class="form-control" id="uriFragments">
+          </div>
+          <div class="form-group">
+            <label for="parameters">Parameters:</label>
+            <input type="text" class="form-control" id="parameters">
+          </div>
+          <div class="form-group">
+            <label for="headers">Headers:</label>
+            <input type="text" class="form-control" id="headers">
+          </div>
+          <div class="form-group">
+            <label for="body">Body:</label>
+            <textarea class="form-control" id="body" rows="4"></textarea>
+          </div>
+          <input type="submit" id="executeButton" value="Execute" disabled class="btn btn-primary">
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-12">
+      <h5>Response <span id="responseCode"></span></h5>
+      <div class="fusio-response">
+        <pre id="output"></pre>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="./dist/app.bundle.js"></script>
+
+</body>
+</html>
