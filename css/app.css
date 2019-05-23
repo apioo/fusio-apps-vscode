@@ -55,16 +55,25 @@
   border:1px solid #444;
   padding:8px;
   overflow:auto;
+  background-color:#eee;
 }
 
 h5 {
   margin:0px;
   margin-top:8px;
   padding:6px;
-  background-color:#444;
+  background-color:#343a40;
   color:#fff;
   font-weight:bold;
   font-size:12px;
   border:1px solid #444;
   border-bottom:0;
+}
+
+#login {
+  margin-top:16px;
+}
+
+#user {
+  margin-right:16px;
 }

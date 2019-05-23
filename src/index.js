@@ -9,21 +9,26 @@ $(document).ready(function () {
     init();
 
     $("#login").submit(onLogin);
+    $("#logout").click(onLogout);
     $("#execute").submit(onExecute);
 });
 
 function init() {
     let fusioUrl = $("body").data("fusio-url");
     let accessToken = window.localStorage.getItem("token");
+    let token = tokenDecode(accessToken);
 
-    if (accessToken) {
+    if (token !== false) {
         Fusio.init({
             baseUrl: fusioUrl,
             accessToken: accessToken
         });
+        
+        console.log(token);
 
         $(".fusio-login").css("display", "none");
         $(".fusio-app").css("display", "block");
+        $("#user").html(token.name);
 
         load();
     } else {
@@ -109,36 +114,36 @@ function loadAction(id) {
 function loadConnection(id) {
     Fusio.backend.connection.entity(id).get().then((resp) => {
         let code = "";
-        code+= "<?php\n\n";
+        code += "<?php\n\n";
 
         if (resp.data.class === 'Fusio\\Impl\\Connection\\System') {
-            code+= "// This is the system connection which works on the database where also\n";
-            code+= "// Fusio is installed. It returns a Doctrine DBAL Connection.\n";
-            code+= "// The following is an example how you can use it inside an action:\n";
-            code+= "\n";
-            code+= "/**\n";
-            code+= " * @see https://www.doctrine-project.org/api/dbal/2.5/Doctrine/DBAL/Connection.html\n";
-            code+= " * @var \\Doctrine\\DBAL\\Connection $connection\n";
-            code+= " */\n";
-            code+= "$connection = $connector->getConnection('" + resp.data.name + "');\n\n";
+            code += "// This is the system connection which works on the database where also\n";
+            code += "// Fusio is installed. It returns a Doctrine DBAL Connection.\n";
+            code += "// The following is an example how you can use it inside an action:\n";
+            code += "\n";
+            code += "/**\n";
+            code += " * @see https://www.doctrine-project.org/api/dbal/2.5/Doctrine/DBAL/Connection.html\n";
+            code += " * @var \\Doctrine\\DBAL\\Connection $connection\n";
+            code += " */\n";
+            code += "$connection = $connector->getConnection('" + resp.data.name + "');\n\n";
         } else if (resp.data.class === 'Fusio\\Adapter\\Sql\\Connection\\Sql' || resp.data.class === 'Fusio\\Adapter\\Sql\\Connection\\SqlAdvanced') {
-            code+= "// This is a connection to a database. It returns a Doctrine DBAL Connection.\n";
-            code+= "// The following is an example how you can use it inside an action:\n";
-            code+= "\n";
-            code+= "/**\n";
-            code+= " * @see https://www.doctrine-project.org/api/dbal/2.5/Doctrine/DBAL/Connection.html\n";
-            code+= " * @var \\Doctrine\\DBAL\\Connection $connection\n";
-            code+= " */\n";
-            code+= "$connection = $connector->getConnection('" + resp.data.name + "');\n\n";
+            code += "// This is a connection to a database. It returns a Doctrine DBAL Connection.\n";
+            code += "// The following is an example how you can use it inside an action:\n";
+            code += "\n";
+            code += "/**\n";
+            code += " * @see https://www.doctrine-project.org/api/dbal/2.5/Doctrine/DBAL/Connection.html\n";
+            code += " * @var \\Doctrine\\DBAL\\Connection $connection\n";
+            code += " */\n";
+            code += "$connection = $connector->getConnection('" + resp.data.name + "');\n\n";
         } else if (resp.data.class === 'Fusio\\Adapter\\Http\\Connection\\Http') {
-            code+= "// This is a connection to a remote HTTP server. It returns a Guzzle client.\n";
-            code+= "// The following is an example how you can use it inside an action:\n";
-            code+= "\n";
-            code+= "/**\n";
-            code+= " * @see http://docs.guzzlephp.org/en/latest/\n";
-            code+= " * @var \\GuzzleHttp\\Client\n";
-            code+= " */\n";
-            code+= "$client = $connector->getConnection('" + resp.data.name + "');\n\n";
+            code += "// This is a connection to a remote HTTP server. It returns a Guzzle client.\n";
+            code += "// The following is an example how you can use it inside an action:\n";
+            code += "\n";
+            code += "/**\n";
+            code += " * @see http://docs.guzzlephp.org/en/latest/\n";
+            code += " * @var \\GuzzleHttp\\Client\n";
+            code += " */\n";
+            code += "$client = $connector->getConnection('" + resp.data.name + "');\n\n";
         }
 
         let model = monaco.editor.createModel(code, "php");
@@ -160,6 +165,12 @@ function onLogin() {
     return false;
 }
 
+function onLogout() {
+    window.localStorage.removeItem("token");
+    location.reload();
+    return false;
+}
+
 function onExecute() {
     let actionId = $("#actionId").val();
     let method = $("#method").val();
@@ -175,11 +186,11 @@ function onExecute() {
     if (uriFragments) {
         options.uriFragments = uriFragments;
     }
-    
+
     if (parameters) {
         options.parameters = parameters;
     }
-    
+
     if (headers) {
         options.headers = headers;
     }
@@ -213,4 +224,23 @@ function onExecute() {
     }
 
     return false;
+}
+
+function tokenDecode(token) {
+    if (!token) {
+        return false;
+    }
+
+    let parts = token.split(".");
+    if (parts.length >= 2) {
+        let body = JSON.parse(atob(parts[1]));
+
+        if (Math.floor(Date.now() / 1000) > body.exp) {
+            return false;
+        }
+
+        return body;
+    } else {
+        return false;
+    }
 }

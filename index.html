@@ -10,9 +10,11 @@
 <body data-fusio-url="http://127.0.0.1/projects/fusio/public/index.php/">
 
 <div class="container fusio-login" style="display:none;">
+  <nav class="navbar navbar-dark bg-dark">
+    <a class="navbar-brand" href="">Fusio-VSCode</a>
+  </nav>
   <div class="row">
     <div class="col-md-12">
-      <h5>Login</h5>
       <form id="login">
         <div class="form-group">
           <label for="username">Username:</label>
@@ -29,6 +31,13 @@
 </div>
 
 <div class="container-fluid fusio-app" style="display:none;">
+  <nav class="navbar navbar-dark bg-dark">
+    <a class="navbar-brand" href="">Fusio-VSCode</a>
+    <div>
+      <span id="user" class="navbar-text"></span>
+      <a href="#" id="logout" class="btn btn-primary">Logout</a>
+    </div>
+  </nav>
   <div class="row">
     <div class="col-md-2">
       <h5>Navigation</h5>
@@ -41,11 +50,11 @@
         </ul>
       </div>
     </div>
-    <div class="col-md-6">
+    <div class="col-md-7">
       <h5 id="editorTitle">-</h5>
       <div id="container" class="fusio-editor"></div>
     </div>
-    <div class="col-md-4">
+    <div class="col-md-3">
       <h5>Execute</h5>
       <div class="fusio-execute">
         <form id="execute">
