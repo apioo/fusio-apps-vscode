@@ -1,8 +1,9 @@
 const path = require('path');
 const MonacoWebpackPlugin = require('monaco-editor-webpack-plugin');
+const CleanWebpackPlugin = require('clean-webpack-plugin');
 
 module.exports = {
-    mode: 'development',
+    mode: 'production',
     entry: {
         "app": './src/index.js',
     },
@@ -19,6 +20,7 @@ module.exports = {
         }]
     },
     plugins: [
+        new CleanWebpackPlugin(),
         new MonacoWebpackPlugin({
             languages: ["javascript", "php", "json", "typescript", "sql", "yaml"]
         })
