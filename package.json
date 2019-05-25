@@ -9,6 +9,7 @@
     "monaco-editor-webpack-plugin": "^1.7.0"
   },
   "devDependencies": {
+    "clean-webpack-plugin": "^2.0.2",
     "css-loader": "^1.0.1",
     "style-loader": "^0.22.1",
     "webpack": "^4.32.2",
