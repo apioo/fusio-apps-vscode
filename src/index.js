@@ -23,8 +23,6 @@ function init() {
             baseUrl: fusioUrl,
             accessToken: accessToken
         });
-        
-        console.log(token);
 
         $(".fusio-login").css("display", "none");
         $(".fusio-app").css("display", "block");
