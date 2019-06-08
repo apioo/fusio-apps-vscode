@@ -58,7 +58,12 @@
   background-color:#eee;
 }
 
-h5 {
+.fusio-new-button {
+  margin-right:12px;
+  cursor:pointer;
+}
+
+.fusio-app h5 {
   margin:0px;
   margin-top:8px;
   padding:6px;

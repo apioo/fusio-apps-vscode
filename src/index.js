@@ -11,6 +11,7 @@ $(document).ready(function () {
     $("#login").submit(onLogin);
     $("#logout").click(onLogout);
     $("#execute").submit(onExecute);
+    $("#newAction").submit(onNewAction);
 });
 
 function init() {
@@ -49,7 +50,14 @@ function initEditor() {
 }
 
 function load() {
-    // load actions
+    loadActions();
+    loadConnections();
+    initEditor();
+    
+    $("#newActionButton").click(onNewAction);
+}
+
+function loadActions() {
     Fusio.backend.action.collection().get({count: 1024}).then((resp) => {
         let html = "";
         resp.data.entry.forEach((entry) => {
@@ -66,26 +74,6 @@ function load() {
             });
         });
     });
-
-    // load connections
-    Fusio.backend.connection.collection().get({count: 1024}).then((resp) => {
-        let html = "";
-        resp.data.entry.forEach((entry) => {
-            html += "<li class=\"nav-item\"><a href=\"#\" class=\"fusio-load-connection\" data-id=\"" + entry.id + "\">" + entry.name + "</a></li>"
-        });
-
-        $("#fusioConnections").html(html);
-
-        $(".fusio-load-connection").each(function () {
-            $(this).off("click");
-            $(this).click(function () {
-                loadConnection($(this).data("id"));
-                return false;
-            });
-        });
-    });
-
-    initEditor();
 }
 
 function loadAction(id) {
@@ -106,6 +94,25 @@ function loadAction(id) {
             editor.setModel(model);
         }
         editor.layout();
+    });
+}
+
+function loadConnections() {
+    Fusio.backend.connection.collection().get({count: 1024}).then((resp) => {
+        let html = "";
+        resp.data.entry.forEach((entry) => {
+            html += "<li class=\"nav-item\"><a href=\"#\" class=\"fusio-load-connection\" data-id=\"" + entry.id + "\">" + entry.name + "</a></li>"
+        });
+
+        $("#fusioConnections").html(html);
+
+        $(".fusio-load-connection").each(function () {
+            $(this).off("click");
+            $(this).click(function () {
+                loadConnection($(this).data("id"));
+                return false;
+            });
+        });
     });
 }
 
@@ -220,6 +227,36 @@ function onExecute() {
             $("#output").html(JSON.stringify(resp.data.body, null, 4));
         });
     }
+
+    return false;
+}
+
+function onNewAction() {
+    let name = prompt("Please enter the action name:");
+
+    let action = {
+        name: name,
+        class: 'Fusio\\Adapter\\Php\\Action\\PhpSandbox',
+        engine: 'Fusio\\Engine\\Factory\\Resolver\\PhpClass',
+        config: {
+            code: '<?php\n' +
+                '\n' +
+                '// @TODO implement my new action\n' +
+                '\n' +
+                'return $response->build(200, [], [\n' +
+                '    \'hello\' => \'world\',\n' +
+                ']);\n'
+        }
+    };
+
+    Fusio.backend.action.collection().post(action)
+        .then((resp) => {
+            loadActions();
+        })
+        .catch((error) => {
+            $("#responseCode").html("");
+            $("#output").html(JSON.stringify(error.response.data, null, 4)).css("color", "red");
+        });
 
     return false;
 }
