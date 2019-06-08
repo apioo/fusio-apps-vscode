@@ -249,6 +249,9 @@ function onExecute() {
 
 function onNewAction() {
     let name = prompt("Please enter the action name:");
+    if (!name) {
+        return;
+    }
 
     let action = {
         name: name,
