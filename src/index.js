@@ -1,7 +1,7 @@
 import * as monaco from 'monaco-editor';
 import * as $ from 'jquery';
 import {Fusio} from 'fusio-sdk';
-import {initAutocomplete} from "./editor";
+import {initAutocomplete} from './editor';
 
 let editor;
 
