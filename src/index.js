@@ -15,7 +15,7 @@ $(document).ready(function () {
 });
 
 function init() {
-    let fusioUrl = $("body").data("fusio-url");
+    let fusioUrl = fusio_url;
     let accessToken = window.localStorage.getItem("token");
     let token = tokenDecode(accessToken);
 
