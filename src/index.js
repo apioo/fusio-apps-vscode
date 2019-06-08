@@ -200,6 +200,10 @@ function onExecute() {
     let headers = $("#headers").val();
     let body = $("#body").val();
 
+    if (!actionId) {
+        return;
+    }
+
     let options = {
         method: method
     };
