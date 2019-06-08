@@ -46,6 +46,22 @@ function initEditor() {
         language: 'php'
     });
 
+    editor.addAction({
+        id: 'execute',
+        label: 'Execute action',
+        keybindings: [
+            monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_E
+        ],
+        precondition: null,
+        keybindingContext: null,
+        contextMenuGroupId: 'navigation',
+        contextMenuOrder: 1.5,
+        run: function(ed) {
+            onExecute();
+            return null;
+        }
+    });
+
     initAutocomplete();
 }
 
