@@ -2,6 +2,7 @@ import * as monaco from 'monaco-editor';
 import * as $ from 'jquery';
 import {Fusio} from 'fusio-sdk';
 import {initAutocomplete} from './editor';
+import Ajv from 'ajv';
 
 let editor;
 
@@ -12,6 +13,8 @@ $(document).ready(function () {
     $("#logout").click(onLogout);
     $("#execute").submit(onExecute);
     $("#newAction").submit(onNewAction);
+    $("#validate").submit(onValidate);
+    $(".fusio-tabs-header").click(showTab);
 });
 
 function init() {
@@ -56,7 +59,7 @@ function initEditor() {
         keybindingContext: null,
         contextMenuGroupId: 'navigation',
         contextMenuOrder: 1.5,
-        run: function(ed) {
+        run: function (ed) {
             onExecute();
             return null;
         }
@@ -68,8 +71,9 @@ function initEditor() {
 function load() {
     loadActions();
     loadConnections();
+    loadSchemas();
     initEditor();
-    
+
     $("#newActionButton").click(onNewAction);
 }
 
@@ -173,6 +177,17 @@ function loadConnection(id) {
     });
 }
 
+function loadSchemas() {
+    Fusio.backend.schema.collection().get({count: 1024}).then((resp) => {
+        let html = "";
+        resp.data.entry.forEach((entry) => {
+            html += "<option value=\"" + entry.id + "\">" + entry.name + "</option>";
+        });
+
+        $("#schema").html(html);
+    });
+}
+
 function onLogin() {
     let username = $("#username").val();
     let password = $("#password").val();
@@ -234,21 +249,78 @@ function onExecute() {
                 Fusio.backend.action.execute(actionId).post(options).then((resp) => {
                     $("#responseCode").html(resp.data.statusCode);
                     $("#output").html(JSON.stringify(resp.data.body, null, 4)).css("color", "black");
+                    $("#validateButton").removeAttr("disabled");
                 });
             })
             .catch((error) => {
                 $("#responseCode").html("");
                 $("#output").html(JSON.stringify(error.response.data, null, 4)).css("color", "red");
+                $("#validateButton").attr("disabled", "disabled");
             });
     } else {
         // otherwise we can still execute the action
         Fusio.backend.action.execute(actionId).post(options).then((resp) => {
             $("#responseCode").html(resp.data.statusCode);
             $("#output").html(JSON.stringify(resp.data.body, null, 4));
+            $("#validateButton").removeAttr("disabled");
         });
     }
 
     return false;
+}
+
+function onValidate() {
+    let data = JSON.parse($("#output").text());
+    let schemaId = $("#schema").val();
+
+    if (!data) {
+        return;
+    }
+
+    if (!schemaId) {
+        return;
+    }
+
+    Fusio.backend.schema.entity(schemaId).get().then((resp) => {
+        let schema = resp.data.source;
+
+        let ajv = new Ajv();
+        let validate = ajv.compile(schema);
+        let valid = validate(data);
+
+        if (!valid) {
+            let messages = [];
+            for (let i = 0; i < validate.errors.length; i++) {
+                messages.push(validate.errors[i].schemaPath + ': ' + validate.errors[i].message);
+            }
+
+            $("#validationError")
+                .addClass("alert-danger")
+                .removeClass("alert-success")
+                .html(messages.join(', '));
+        } else {
+            $("#validationError")
+                .addClass("alert-success")
+                .removeClass("alert-danger")
+                .html("Validation successful!");
+        }
+    });
+
+    return false;
+}
+
+function showTab() {
+    $(".fusio-tabs > form")
+        .css('display', 'none');
+
+    $($(this).data("target"))
+        .css('display', 'block');
+
+    $(".fusio-tabs-header")
+        .removeClass('fusio-tabs-header-active');
+
+    $(this)
+        .addClass('fusio-tabs-header-active');
 }
 
 function onNewAction() {

@@ -61,8 +61,12 @@
       <div id="container" class="fusio-editor"></div>
     </div>
     <div class="col-md-3">
-      <h5>Execute</h5>
-      <div class="fusio-execute">
+      <h5>Control</h5>
+      <div class="fusio-tabs">
+        <div>
+          <a class="fusio-tabs-header fusio-tabs-header-active" data-target="#execute">Execute</a>
+          <a class="fusio-tabs-header" data-target="#validate">Validate</a>
+        </div>
         <form id="execute">
           <input type="hidden" id="actionId" value="">
           <div class="form-group">
@@ -92,6 +96,15 @@
             <textarea class="form-control" id="body" rows="4"></textarea>
           </div>
           <input type="submit" id="executeButton" value="Execute" disabled class="btn btn-primary">
+        </form>
+        <form id="validate" style="display:none;">
+          <div class="form-group">
+            <label for="schema">Schema:</label>
+            <select id="schema" class="form-control"></select>
+          </div>
+          <input type="submit" id="validateButton" value="Validate" disabled class="btn btn-primary">
+          <br><br>
+          <div class="alert" role="alert" id="validationError"></div>
         </form>
       </div>
     </div>
