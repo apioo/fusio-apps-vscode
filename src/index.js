@@ -1,8 +1,8 @@
+import Ajv from 'ajv';
 import * as monaco from 'monaco-editor';
 import * as $ from 'jquery';
 import {Fusio} from 'fusio-sdk';
 import {initAutocomplete} from './editor';
-import Ajv from 'ajv';
 
 let editor;
 
@@ -61,6 +61,22 @@ function initEditor() {
         contextMenuOrder: 1.5,
         run: function (ed) {
             onExecute();
+            return null;
+        }
+    });
+
+    editor.addAction({
+        id: 'validate',
+        label: 'Validate response',
+        keybindings: [
+            monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_D
+        ],
+        precondition: null,
+        keybindingContext: null,
+        contextMenuGroupId: 'navigation',
+        contextMenuOrder: 1.5,
+        run: function (ed) {
+            onValidate();
             return null;
         }
     });
@@ -291,7 +307,7 @@ function onValidate() {
         if (!valid) {
             let messages = [];
             for (let i = 0; i < validate.errors.length; i++) {
-                messages.push(validate.errors[i].schemaPath + ': ' + validate.errors[i].message);
+                messages.push(validate.errors[i].message);
             }
 
             $("#validationError")
