@@ -25,7 +25,7 @@ module.exports = {
     plugins: [
         new CleanWebpackPlugin(),
         new MonacoWebpackPlugin({
-            languages: ['javascript', 'php', 'json', 'typescript', 'sql', 'yaml']
+            languages: ['javascript', 'php', 'json', 'sql', 'yaml']
         })
     ]
 };
