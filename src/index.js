@@ -119,14 +119,20 @@ function loadAction(id) {
         $("#executeButton").removeAttr("disabled");
 
         let code;
+        let language;
         if (resp.data.class === 'Fusio\\Adapter\\Php\\Action\\PhpSandbox') {
             code = resp.data.config.code;
+            language = 'php';
+        } else if (resp.data.class === 'Fusio\\Adapter\\Sql\\Action\\SqlSelect') {
+            code = resp.data.config.sql;
+            language = 'sql';
         } else {
             code = "<?php\n\n// Note this editor can only edit PHP-Sandbox actions\n// It is still possible to execute this action\n\n/*\n" + JSON.stringify(resp.data, null, 4) + "\n*/";
+            language = 'php';
         }
 
         if (code) {
-            let model = monaco.editor.createModel(code, "php");
+            let model = monaco.editor.createModel(code, language);
             editor.setModel(model);
         }
         editor.layout();
@@ -259,6 +265,23 @@ function onExecute() {
     if (action.class === 'Fusio\\Adapter\\Php\\Action\\PhpSandbox') {
         // update and execute the action
         action.config.code = editor.getValue();
+
+        Fusio.backend.action.entity(actionId).put(action)
+            .then((resp) => {
+                Fusio.backend.action.execute(actionId).post(options).then((resp) => {
+                    $("#responseCode").html(resp.data.statusCode);
+                    $("#output").html(JSON.stringify(resp.data.body, null, 4)).css("color", "black");
+                    $("#validateButton").removeAttr("disabled");
+                });
+            })
+            .catch((error) => {
+                $("#responseCode").html("");
+                $("#output").html(JSON.stringify(error.response.data, null, 4)).css("color", "red");
+                $("#validateButton").attr("disabled", "disabled");
+            });
+    } else if (action.class === 'Fusio\\Adapter\\Sql\\Action\\SqlSelect') {
+        // update and execute the action
+        action.config.sql = editor.getValue();
 
         Fusio.backend.action.entity(actionId).put(action)
             .then((resp) => {
