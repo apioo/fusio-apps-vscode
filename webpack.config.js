@@ -20,10 +20,12 @@ module.exports = {
         rules: [{
             test: /\.css$/,
             use: ['style-loader', 'css-loader']
+        }, {
+            test: /\.ttf$/,
+            use: ['file-loader']
         }]
     },
     plugins: [
-        new CleanWebpackPlugin(),
         new MonacoWebpackPlugin({
             languages: ['javascript', 'php', 'json', 'sql', 'yaml']
         })

@@ -1,19 +1,20 @@
 {
   "name": "vscode",
   "dependencies": {
-    "ajv": "^6.10.2",
-    "bootstrap": "^4.3.1",
+    "ajv": "^6.12.2",
+    "bootstrap": "^4.4.1",
     "fusio-sdk": "^0.1.6",
-    "jquery": "^3.4.1",
+    "jquery": "^3.5.1",
     "js-yaml": "^3.13.1",
-    "monaco-editor": "^0.18.1",
-    "monaco-editor-webpack-plugin": "^1.7.0"
+    "monaco-editor": "^0.20.0",
+    "monaco-editor-webpack-plugin": "^1.9.0"
   },
   "devDependencies": {
     "clean-webpack-plugin": "^2.0.2",
     "css-loader": "^1.0.1",
+    "file-loader": "^6.0.0",
     "style-loader": "^0.22.1",
-    "webpack": "^4.40.2",
-    "webpack-cli": "^3.3.9"
+    "webpack": "^4.43.0",
+    "webpack-cli": "^3.3.11"
   }
 }
