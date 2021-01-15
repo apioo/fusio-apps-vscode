@@ -213,7 +213,7 @@ function loadSchemas() {
 function onLogin() {
     let username = $("#username").val();
     let password = $("#password").val();
-    Fusio.backend.token.do().clientCredentials(username, password).then((resp) => {
+    Fusio.auth.token.do().clientCredentials(username, password).then((resp) => {
         let accessToken = resp.data.access_token;
         if (accessToken) {
             window.localStorage.setItem("token", accessToken);
