@@ -1,10 +1,17 @@
 import Ajv from 'ajv';
-import * as monaco from 'monaco-editor';
 import * as $ from 'jquery';
-import {Fusio} from 'fusio-sdk';
+import * as monaco from 'monaco-editor';
 import {initAutocomplete} from './editor';
+import {Client} from 'fusio-sdk';
+import ClientBackend from "fusio-sdk/dist/src/generated/backend/Client";
+import Authenticator from "fusio-sdk/dist/src/Authenticator";
 
+/** @var IStandaloneCodeEditor */
 let editor;
+/** @var {ClientBackend} */
+let client;
+/** @var {Authenticator} */
+let authenticator;
 
 $(document).ready(function () {
     init();
@@ -23,10 +30,7 @@ function init() {
     let token = tokenDecode(accessToken);
 
     if (token !== false) {
-        Fusio.init({
-            baseUrl: fusioUrl,
-            accessToken: accessToken
-        });
+        client = new ClientBackend(fusioUrl, accessToken)
 
         $(".fusio-login").css("display", "none");
         $(".fusio-app").css("display", "block");
@@ -34,9 +38,7 @@ function init() {
 
         load();
     } else {
-        Fusio.init({
-            baseUrl: fusioUrl
-        });
+        authenticator = new Authenticator(fusioUrl)
 
         $(".fusio-login").css("display", "block");
         $(".fusio-app").css("display", "none");
@@ -94,7 +96,7 @@ function load() {
 }
 
 function loadActions() {
-    Fusio.backend.action.collection().get({count: 1024}).then((resp) => {
+    client.getBackendAction().backendActionActionGetAll({count: 1024}).then((resp) => {
         let html = "";
         resp.data.entry.forEach((entry) => {
             html += "<li class=\"nav-item\"><a href=\"#\" class=\"fusio-load-action\" data-id=\"" + entry.id + "\">" + entry.name + "</a></li>"
@@ -113,7 +115,7 @@ function loadActions() {
 }
 
 function loadAction(id) {
-    Fusio.backend.action.entity(id).get().then((resp) => {
+    client.getBackendActionByActionId(id).backendActionActionGet().then((resp) => {
         $("#actionId").val(id).data("action", resp.data);
         $("#editorTitle").html(resp.data.name);
         $("#executeButton").removeAttr("disabled");
@@ -135,12 +137,13 @@ function loadAction(id) {
             let model = monaco.editor.createModel(code, language);
             editor.setModel(model);
         }
+
         editor.layout();
-    });
+    })
 }
 
 function loadConnections() {
-    Fusio.backend.connection.collection().get({count: 1024}).then((resp) => {
+    client.getBackendConnection().backendActionConnectionGetAll({count: 1024}).then((resp) => {
         let html = "";
         resp.data.entry.forEach((entry) => {
             html += "<li class=\"nav-item\"><a href=\"#\" class=\"fusio-load-connection\" data-id=\"" + entry.id + "\">" + entry.name + "</a></li>"
@@ -159,7 +162,7 @@ function loadConnections() {
 }
 
 function loadConnection(id) {
-    Fusio.backend.connection.entity(id).get().then((resp) => {
+    client.getBackendConnectionByConnectionId(id).backendActionConnectionGet().then((resp) => {
         let code = "";
         code += "<?php\n\n";
 
@@ -200,7 +203,7 @@ function loadConnection(id) {
 }
 
 function loadSchemas() {
-    Fusio.backend.schema.collection().get({count: 1024}).then((resp) => {
+    client.getBackendSchema().backendActionSchemaGetAll({count: 1024}).then((resp) => {
         let html = "";
         resp.data.entry.forEach((entry) => {
             html += "<option value=\"" + entry.id + "\">" + entry.name + "</option>";
@@ -213,7 +216,7 @@ function loadSchemas() {
 function onLogin() {
     let username = $("#username").val();
     let password = $("#password").val();
-    Fusio.auth.token.do().clientCredentials(username, password).then((resp) => {
+    authenticator.requestAccessToken(username, password).then((resp) => {
         let accessToken = resp.data.access_token;
         if (accessToken) {
             window.localStorage.setItem("token", accessToken);
@@ -266,9 +269,9 @@ function onExecute() {
         // update and execute the action
         action.config.code = editor.getValue();
 
-        Fusio.backend.action.entity(actionId).put(action)
+        client.getBackendActionByActionId(actionId).backendActionActionUpdate(action)
             .then((resp) => {
-                Fusio.backend.action.execute(actionId).post(options).then((resp) => {
+                client.getBackendActionExecuteByActionId(actionId).backendActionActionExecute(options).then((resp) => {
                     $("#responseCode").html(resp.data.statusCode);
                     $("#output").html(JSON.stringify(resp.data.body, null, 4)).css("color", "black");
                     $("#validateButton").removeAttr("disabled");
@@ -283,9 +286,9 @@ function onExecute() {
         // update and execute the action
         action.config.sql = editor.getValue();
 
-        Fusio.backend.action.entity(actionId).put(action)
+        client.getBackendActionByActionId(actionId).backendActionActionUpdate(action)
             .then((resp) => {
-                Fusio.backend.action.execute(actionId).post(options).then((resp) => {
+                client.getBackendActionExecuteByActionId(actionId).backendActionActionExecute(options).then((resp) => {
                     $("#responseCode").html(resp.data.statusCode);
                     $("#output").html(JSON.stringify(resp.data.body, null, 4)).css("color", "black");
                     $("#validateButton").removeAttr("disabled");
@@ -298,7 +301,7 @@ function onExecute() {
             });
     } else {
         // otherwise we can still execute the action
-        Fusio.backend.action.execute(actionId).post(options).then((resp) => {
+        client.getBackendActionExecuteByActionId(actionId).backendActionActionExecute(options).then((resp) => {
             $("#responseCode").html(resp.data.statusCode);
             $("#output").html(JSON.stringify(resp.data.body, null, 4));
             $("#validateButton").removeAttr("disabled");
@@ -320,7 +323,7 @@ function onValidate() {
         return;
     }
 
-    Fusio.backend.schema.entity(schemaId).get().then((resp) => {
+    client.getBackendSchemaBySchemaId(schemaId).backendActionSchemaGet().then((resp) => {
         let schema = resp.data.source;
 
         let ajv = new Ajv();
@@ -383,7 +386,7 @@ function onNewAction() {
         }
     };
 
-    Fusio.backend.action.collection().post(action)
+    client.getBackendAction().backendActionActionCreate(action)
         .then((resp) => {
             loadActions();
         })
